@@ -21,21 +21,31 @@ themes = [
 ]
 
 theme = random.choice(themes)
+previous_posts = get_previous_posts()
 
 prompt = f"""
 You are the founder of SocialFuse, an AI-powered Instagram comment moderation SaaS.
 
+Theme:
+{theme}
+
+Here are my recent posts:
+
+{previous_posts}
+
 Generate ONE X post under 280 characters.
 
-Theme: {theme}
+Rules:
 
-Requirements:
-- Human sounding
-- No hashtags
-- No emojis
-- Slightly opinionated
-- Valuable or thought-provoking
-- Don't sound like marketing
+- Avoid repeating previous ideas.
+- Don't sound like marketing.
+- Human sounding.
+- No hashtags.
+- No emojis.
+- Slightly opinionated.
+- Share lessons, struggles, insights or observations.
+- Occasionally ask a question.
+- Don't mention SocialFuse every time.
 
 Return only the post.
 """
