@@ -103,7 +103,7 @@ post = None
 for _ in range(3):
     try:
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-120b"
             messages=[
                 {
                     "role": "user",
@@ -115,7 +115,7 @@ for _ in range(3):
         candidate = response.choices[0].message.content.strip()
 
         # Avoid exact duplicates
-        if candidate not in previous_posts:
+        if candidate.strip() not in [p.strip() for p in previous_posts]:
             post = candidate
             break
 
@@ -146,11 +146,7 @@ data = {
                 }
             ]
         },
-        "Theme": {
-            "select": {
-                "name": theme
-            }
-        }
+
     }
 }
 
@@ -160,6 +156,8 @@ response = requests.post(
     json=data
 )
 
+print(response.status_code)
+print(response.text)
 response.raise_for_status()
 
 print("Successfully added post to Notion.")
