@@ -27,14 +27,7 @@ def get_previous_posts():
         "Content-Type": "application/json",
         "Notion-Version": "2022-06-28"
     }
-    if post in previous_posts:
-    regenerate
-    for _ in range(3):
-    try:
-        # generate
-        break
-    except:
-        continue
+   
     response = requests.post(
         url,
         headers=headers,
@@ -60,96 +53,64 @@ def get_previous_posts():
         except:
             pass
 
-    return "\n".join(posts)
+    return posts
+    previous_posts = get_previous_posts()
+    previous_posts_text = "\n".join(previous_posts)
+```python
 theme = random.choice(themes)
 previous_posts = get_previous_posts()
 
 prompt = f"""
-You are the founder of SocialFuse, an AI-powered Instagram comment moderation SaaS.
+You are the founder of SocialFuse.
 
 Theme:
 {theme}
-
-Here are my recent posts:
-
-{previous_posts}
-
-You are the founder of SocialFuse.
 
 Here are my previous posts:
 
 {previous_posts}
 
-Theme:
-{theme}
-
-Write one post under 280 characters.
+Write ONE X post under 280 characters.
 
 Requirements:
-- Human sounding.
-- Slightly opinionated.
-- Share lessons, struggles, observations or contrarian thoughts.
-- Don't sell.
-- Don't mention SocialFuse every time.
-- Avoid repeating previous ideas.
-- Avoid generic AI clichés.
-- Make readers think.
-- Occasionally ask a question.
-
-Return only the post.
-
-Rules:
-
-- Avoid repeating previous ideas.
-- Don't sound like marketing.
-- Human sounding.
-- No hashtags.
-- No emojis.
-- Slightly opinionated.
-- Share lessons, struggles, insights or observations.
-- Occasionally ask a question.
-- Don't mention SocialFuse every time.
+- Human sounding
+- Slightly opinionated
+- Share lessons, struggles, observations or contrarian thoughts
+- Don't sell
+- Avoid repeating previous ideas
+- Avoid generic AI clichés
+- No hashtags
+- No emojis
+- Occasionally ask a question
 
 Return only the post.
 """
 
-response = client.chat.completions.create(
-    model="llama-3.3-70b-versatile",
-    messages=[{"role": "user", "content": prompt}]
-)
+post = None
 
-post = response.choices[0].message.content.strip()
-
-headers = {
-    "Authorization": f"Bearer {NOTION_TOKEN}",
-    "Content-Type": "application/json",
-    "Notion-Version": "2022-06-28"
-}
-
-data = {
-    "parent": {"database_id": DATABASE_ID},
-    "properties": {
-        "X Post": {
-            "title": [
+for _ in range(3):
+    try:
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
                 {
-                    "text": {
-                        "content": post
-                    }
+                    "role": "user",
+                    "content": prompt
                 }
             ]
-        },
-        "Theme": {
-            "select": {
-                "name": theme
-            }
-        }
-    }
-}
+        )
 
-r = requests.post(
-    "https://api.notion.com/v1/pages",
-    headers=headers,
-    json=data
-)
+        candidate = response.choices[0].message.content.strip()
 
+        # Prevent exact duplicates
+        if candidate not in previous_posts:
+            post = candidate
+            break
+
+    except Exception as e:
+        print(e)
+
+if post is None:
+    raise Exception("Failed to generate a unique post after 3 attempts.")
+```
 print(r.text)
