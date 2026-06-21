@@ -19,7 +19,41 @@ themes = [
     "Product Updates",
     "Founder Lessons"
 ]
+def get_previous_posts():
+    url = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
 
+    headers = {
+        "Authorization": f"Bearer {NOTION_TOKEN}",
+        "Content-Type": "application/json",
+        "Notion-Version": "2022-06-28"
+    }
+
+    response = requests.post(
+        url,
+        headers=headers,
+        json={
+            "page_size": 20,
+            "sorts": [
+                {
+                    "timestamp": "created_time",
+                    "direction": "descending"
+                }
+            ]
+        }
+    )
+
+    results = response.json()["results"]
+
+    posts = []
+
+    for page in results:
+        try:
+            title = page["properties"]["X Post"]["title"][0]["text"]["content"]
+            posts.append(title)
+        except:
+            pass
+
+    return "\n".join(posts)
 theme = random.choice(themes)
 previous_posts = get_previous_posts()
 
@@ -88,40 +122,5 @@ r = requests.post(
     headers=headers,
     json=data
 )
-def get_previous_posts():
-    url = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
-
-    headers = {
-        "Authorization": f"Bearer {NOTION_TOKEN}",
-        "Content-Type": "application/json",
-        "Notion-Version": "2022-06-28"
-    }
-
-    response = requests.post(
-        url,
-        headers=headers,
-        json={
-            "page_size": 20,
-            "sorts": [
-                {
-                    "timestamp": "created_time",
-                    "direction": "descending"
-                }
-            ]
-        }
-    )
-
-    results = response.json()["results"]
-
-    posts = []
-
-    for page in results:
-        try:
-            title = page["properties"]["X Post"]["title"][0]["text"]["content"]
-            posts.append(title)
-        except:
-            pass
-
-    return "\n".join(posts)
 
 print(r.text)
