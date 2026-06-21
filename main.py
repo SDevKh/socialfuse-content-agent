@@ -102,7 +102,7 @@ post = None
 for _ in range(3):
     try:
         response = client.chat.completions.create(
-            model="openai/gpt-oss-120b"
+            model="openai/gpt-oss-120b",
             messages=[
                 {
                     "role": "user",
