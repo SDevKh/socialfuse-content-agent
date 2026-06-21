@@ -27,7 +27,14 @@ def get_previous_posts():
         "Content-Type": "application/json",
         "Notion-Version": "2022-06-28"
     }
-
+    if post in previous_posts:
+    regenerate
+    for _ in range(3):
+    try:
+        # generate
+        break
+    except:
+        continue
     response = requests.post(
         url,
         headers=headers,
@@ -67,7 +74,29 @@ Here are my recent posts:
 
 {previous_posts}
 
-Generate ONE X post under 280 characters.
+You are the founder of SocialFuse.
+
+Here are my previous posts:
+
+{previous_posts}
+
+Theme:
+{theme}
+
+Write one post under 280 characters.
+
+Requirements:
+- Human sounding.
+- Slightly opinionated.
+- Share lessons, struggles, observations or contrarian thoughts.
+- Don't sell.
+- Don't mention SocialFuse every time.
+- Avoid repeating previous ideas.
+- Avoid generic AI clichés.
+- Make readers think.
+- Occasionally ask a question.
+
+Return only the post.
 
 Rules:
 
