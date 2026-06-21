@@ -1,4 +1,3 @@
-```python
 import os
 import random
 import requests
@@ -162,6 +161,3 @@ response.raise_for_status()
 
 print("Successfully added post to Notion.")
 print(post)
-```
-
-
