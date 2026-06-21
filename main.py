@@ -1,15 +1,18 @@
-
+```python
 import os
 import random
 import requests
 from groq import Groq
 
+# Environment variables
 NOTION_TOKEN = os.getenv("NOTION_TOKEN")
 DATABASE_ID = os.getenv("NOTION_DATABASE_ID")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
+# Groq client
 client = Groq(api_key=GROQ_API_KEY)
 
+# Themes
 themes = [
     "Building in Public",
     "Creator Pain Points",
@@ -19,6 +22,8 @@ themes = [
     "Product Updates",
     "Founder Lessons"
 ]
+
+
 def get_previous_posts():
     url = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
 
@@ -27,7 +32,7 @@ def get_previous_posts():
         "Content-Type": "application/json",
         "Notion-Version": "2022-06-28"
     }
-   
+
     response = requests.post(
         url,
         headers=headers,
@@ -42,6 +47,8 @@ def get_previous_posts():
         }
     )
 
+    response.raise_for_status()
+
     results = response.json()["results"]
 
     posts = []
@@ -54,12 +61,16 @@ def get_previous_posts():
             pass
 
     return posts
-    previous_posts = get_previous_posts()
-    previous_posts_text = "\n".join(previous_posts)
-```python
-theme = random.choice(themes)
-previous_posts = get_previous_posts()
 
+
+# Get previous posts
+previous_posts = get_previous_posts()
+previous_posts_text = "\n".join(previous_posts)
+
+# Choose a theme
+theme = random.choice(themes)
+
+# Prompt
 prompt = f"""
 You are the founder of SocialFuse.
 
@@ -68,7 +79,7 @@ Theme:
 
 Here are my previous posts:
 
-{previous_posts}
+{previous_posts_text}
 
 Write ONE X post under 280 characters.
 
@@ -88,6 +99,7 @@ Return only the post.
 
 post = None
 
+# Retry up to 3 times
 for _ in range(3):
     try:
         response = client.chat.completions.create(
@@ -102,15 +114,56 @@ for _ in range(3):
 
         candidate = response.choices[0].message.content.strip()
 
-        # Prevent exact duplicates
+        # Avoid exact duplicates
         if candidate not in previous_posts:
             post = candidate
             break
 
     except Exception as e:
-        print(e)
+        print(f"Groq Error: {e}")
 
 if post is None:
     raise Exception("Failed to generate a unique post after 3 attempts.")
+
+# Save to Notion
+headers = {
+    "Authorization": f"Bearer {NOTION_TOKEN}",
+    "Content-Type": "application/json",
+    "Notion-Version": "2022-06-28"
+}
+
+data = {
+    "parent": {
+        "database_id": DATABASE_ID
+    },
+    "properties": {
+        "X Post": {
+            "title": [
+                {
+                    "text": {
+                        "content": post
+                    }
+                }
+            ]
+        },
+        "Theme": {
+            "select": {
+                "name": theme
+            }
+        }
+    }
+}
+
+response = requests.post(
+    "https://api.notion.com/v1/pages",
+    headers=headers,
+    json=data
+)
+
+response.raise_for_status()
+
+print("Successfully added post to Notion.")
+print(post)
 ```
-print(r.text)
+
+
